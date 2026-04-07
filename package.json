@@ -17,7 +17,7 @@
     "whatsapp-bot",
     "clevertechnexus"
   ],
-  "author": "clevertech977",
+  "author": "clevertechnexus",
   "license": "MIT",
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "*",
