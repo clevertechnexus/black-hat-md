@@ -1,7 +1,7 @@
 {
   "name": "black-hat-md",
   "version": "5.0.0",
-  "description": "black-hat-md, a Multi Device Whatsapp Bot built by Clever Tech to Enhance Whatsapp Communication Experience",
+  "description": "black-hat-md, a Multi Device Whatsapp Bot built by clever tech nexus to Enhance Whatsapp Communication Experience",
   "main": "./index.js",
   "type": "commonjs",
   "scripts": {
@@ -52,8 +52,8 @@
     "pino": "^7.0.5",
     "pm2": "latest",
     "qrcode-terminal": "^0.12.0",
-    "sequelize": "^6.37.8",
-    "sharp": "0.34.5",
+    "sequelize": "*",
+    "sharp": "0.32.6",
     "sqlite3": "5.1.7",
     "stream": "*",
     "util": "*",

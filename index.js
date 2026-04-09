@@ -1,5 +1,5 @@
 require("events").EventEmitter.defaultMaxListeners = 960;
-require("./gift/gmdHelpers");
+require("./black_hat/gmdHelpers");
 
 const {
     default: giftedConnect,
@@ -73,7 +73,7 @@ const {
     setupConnectionHandler,
     setupGroupEventsListeners,
     initializeLidStore,
-} = require("./gift");
+} = require("./black_hat");
 
 const {
     saveAntiDelete,
@@ -81,7 +81,7 @@ const {
     removeAntiDelete,
     startCleanup,
     SQLiteStore,
-} = require('./gift/database/messageStore');
+} = require('./black_hat/database/messageStore');
 
 const config = require("./config");
 const googleTTS = require("google-tts-api");
@@ -101,7 +101,7 @@ async function resolveRealJid(Gifted, jid) {
     if (!jid) return null;
     if (!jid.endsWith('@lid')) return jid;   // already real
     try {
-        const { getLidMapping } = require('./gift/connection/groupCache');
+        const { getLidMapping } = require('./black_hat/connection/groupCache');
         const cached = getLidMapping(jid);
         if (cached) return cached;
     } catch (_) {}
@@ -110,7 +110,7 @@ async function resolveRealJid(Gifted, jid) {
         if (resolved && !resolved.endsWith('@lid')) return resolved;
     } catch (_) {}
     try {
-        const { getLidMappingFromDb } = require('./gift/database/lidMapping');
+        const { getLidMappingFromDb } = require('./black_hat/database/lidMapping');
         const fromDb = await getLidMappingFromDb(jid);
         if (fromDb) return fromDb;
     } catch (_) {}
@@ -124,8 +124,8 @@ let Gifted;
 let store;
 
 logger.level = "silent";
-app.use(express.static("gift"));
-app.get("/", (req, res) => res.sendFile(__dirname + "/gift/gifted.html"));
+app.use(express.static("black_hat"));
+app.get("/", (req, res) => res.sendFile(__dirname + "/black_hat/black_hat.html"));
 app.get("/health", (req, res) =>
     res.status(200).json({ status: "alive", uptime: process.uptime() }),
 );
@@ -145,8 +145,8 @@ setInterval(async () => {
     } catch (e) {}
 }, 240000);
 
-const sessionDir = path.join(__dirname, "gift", "session");
-const pluginsPath = path.join(__dirname, "gifted");
+const sessionDir = path.join(__dirname, "black_hat", "session");
+const pluginsPath = path.join(__dirname, "commands");
 
 let botSettings = {};
 async function loadBotSettings() {
@@ -227,7 +227,7 @@ async function startGifted() {
 𝐓𝐮𝐭𝐨𝐫𝐢𝐚𝐥𝐬     : *${s.YT || d.YT}*
 𝐔𝐩𝐝𝐚𝐭𝐞𝐬      : *${s.NEWSLETTER_URL || d.NEWSLETTER_URL}*
 
-𝐍𝐨𝐭𝐞:  Bot may take some few seconds/minutes to sync before being ready to use.
+𝐍𝐨𝐭𝐞:  Bot may take some few \nseconds minutes to sync \nbefore being ready to use.
 
 > *${s.CAPTION || d.CAPTION}*`;
 
