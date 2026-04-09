@@ -1,0 +1,286 @@
+const { gmd, commands, getSetting } = require("../black_hat");
+const { downloadContentFromMessage } = require("gifted-baileys");
+const FormData = require("form-data");
+const { Blob } = require("buffer");
+const axios = require("axios");
+const fs = require("fs").promises;
+const fsA = require("node:fs");
+const { S_WHATSAPP_NET } = require("gifted-baileys");
+const { Jimp } = require("jimp");
+const path = require("path");
+const moment = require("moment-timezone");
+const {
+  groupCache,
+  getGroupMetadata,
+  cachedGroupMetadata,
+} = require("../black_hat/connection/groupCache");
+
+const { exec: _shellExec } = require("child_process");
+
+gmd(
+  {
+    pattern: "$",
+    on: "body",
+    react: "🖥️",
+    category: "owner",
+    dontAddCommandList: true,
+    description: "Run a shell command. Usage: $ <command>",
+  },
+  async (from, Gifted, conText) => {
+    const { reply, react, isSuperUser, body } = conText;
+    if (!body.startsWith("$")) return;
+    if (!isSuperUser) return;
+
+    const shellCmd = body.slice(1).trim();
+    if (!shellCmd) return reply("Usage: $ <command>");
+
+    await react("⏳");
+    _shellExec(shellCmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 }, async (err, stdout, stderr) => {
+      const output = (stdout || "") + (stderr ? `\n[stderr]\n${stderr}` : "");
+      const result = err && !output.trim()
+        ? `❌ Error: ${err.message}`
+        : output.trim() || "(no output)";
+      await react("✅");
+      await reply("```\n" + result.slice(0, 4000) + "\n```");
+    });
+  }
+);
+
+gmd(
+  {
+    pattern: ">",
+    on: "body",
+    react: "⚡",
+    category: "owner",
+    dontAddCommandList: true,
+    description: "Evaluate a JavaScript expression. Usage: > <code>",
+  },
+  async (from, Gifted, conText) => {
+    const { mek, reply, react, isSuperUser, body } = conText;
+    if (!body.startsWith(">")) return;
+    if (!isSuperUser) return reply("❌ Owner only");
+
+    const code = body.slice(1).trim();
+    if (!code) return reply("Usage: > <js expression>");
+
+    await react("⏳");
+    try {
+      const gift = require("../black_hat");
+      const _rawDb = require("../black_hat/database/database").DATABASE;
+      const settings = await gift.getAllSettings();
+      const { getSetting, setSetting, getAllSettings, commands } = gift;
+      const prefix = settings.PREFIX;
+      const botPrefix = settings.PREFIX;
+      const db = new Proxy({ raw: _rawDb }, {
+        get(target, key) {
+          if (key === 'raw') return _rawDb;
+          if (key === 'toJSON') return () => settings;
+          if (key === 'toString') return () => JSON.stringify(settings, null, 2);
+          const upper = String(key).toUpperCase();
+          if (upper in settings) return settings[upper];
+          return target[key];
+        }
+      });
+      const bot = Gifted;
+      const m = mek;
+      const {
+        sender, isGroup, groupInfo, groupName, participants,
+        isSuperAdmin, isAdmin, isBotAdmin, superUser,
+        botName, ownerNumber, ownerName,
+      } = conText;
+
+      let result;
+      try {
+        result = await eval(`(async () => { return (${code}) })()`);
+      } catch (e1) {
+        result = await eval(`(async () => { ${code} })()`);
+      }
+      if (result === undefined) result = "(undefined)";
+      let output;
+      if (typeof result === "object" && result !== null) {
+        try {
+          output = JSON.stringify(result, null, 2);
+        } catch (_) {
+          output = String(result);
+        }
+      } else {
+        output = String(result);
+      }
+      await react("✅");
+      await reply("```\n" + output.slice(0, 4000) + "\n```");
+    } catch (err) {
+      await react("❌");
+      await reply(`❌ Error: ${err.message}`);
+    }
+  }
+);
+
+gmd(
+  {
+    pattern: "rmbg",
+    category: "owner",
+    react: "🧠",
+    description: "Remove background from an image (reply to image)",
+  },
+  async (from, Gifted, conText) => {
+    const { reply, mek, react, sender, botName, newsletterJid } = conText;
+
+    try {
+      const msg = mek;
+
+      // Get quoted message
+      const quoted =
+        msg?.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+
+      if (!quoted) {
+        return reply("❌ Please reply to an image");
+      }
+
+      // Extract image message
+      const imageMsg = quoted.imageMessage || quoted.documentMessage;
+
+      if (!imageMsg) {
+        return reply("❌ Reply to a valid image");
+      }
+
+      await react("⏳");
+
+      // Download buffer
+      const stream = await downloadContentFromMessage(imageMsg, "image");
+
+      let buffer = Buffer.from([]);
+      for await (const chunk of stream) {
+        buffer = Buffer.concat([buffer, chunk]);
+      }
+
+      // Convert Buffer → Blob (IMPORTANT FIX)
+      const blob = new Blob([buffer], { type: "image/png" });
+
+      // Prepare FormData
+const form = new FormData();
+
+form.append("image_file", buffer, {
+  filename: "image.png",
+  contentType: "image/png",
+});
+
+      // API KEY
+      const API_KEY = process.env.REMOVE_BG_API || "SbjibtuwvtFPyf9Vvv1bUog9";
+
+      // Call remove.bg API
+      const res = await axios.post(
+        "https://api.remove.bg/v1.0/removebg",
+        form,
+        {
+          headers: {
+            ...form.getHeaders(),
+            "X-Api-Key": API_KEY,
+          },
+          responseType: "arraybuffer",
+        }
+      );
+
+      const outputBuffer = Buffer.from(res.data, "binary");
+
+      await react("✅");
+
+      // Send result
+      await Gifted.sendMessage(from, {
+        image: outputBuffer,
+        caption: "✅ Background removed",
+        contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: newsletterJid,
+                            newsletterName: botName,
+                            serverMessageId: 143,
+                        },
+                    },
+      });
+
+    } catch (err) {
+      console.error(err);
+      await react("❌");
+      reply("❌ Failed to remove background");
+    }
+  }
+);
+
+gmd(
+  {
+    pattern: "wasted",
+    category: "owner",
+    react: "💀",
+    description: "Make someone look WASTED 💀",
+  },
+  async (from, Gifted, conText) => {
+    const { reply, mek, react, sender, botName, newsletterJid } = conText;
+
+    try {
+      const msg = mek;
+
+      let userToWaste;
+
+      // ✅ Mention
+      const mentioned =
+        msg?.message?.extendedTextMessage?.contextInfo?.mentionedJid;
+
+      if (mentioned && mentioned.length > 0) {
+        userToWaste = mentioned[0];
+      }
+
+      // ✅ Reply
+      else {
+        const quoted =
+          msg?.message?.extendedTextMessage?.contextInfo?.participant;
+
+        if (quoted) {
+          userToWaste = quoted;
+        }
+      }
+
+      if (!userToWaste) {
+        return reply("⚠️ Mention or reply to a user to use .wasted");
+      }
+
+      await react("⏳");
+
+      // Get profile picture
+      let profilePic;
+      try {
+        profilePic = await Gifted.profilePictureUrl(userToWaste, "image");
+      } catch {
+        profilePic = "https://i.imgur.com/9aciic.jpeg";
+      }
+
+      // Call API
+      const res = await axios.get(
+        `https://some-random-api.com/canvas/overlay/wasted?avatar=${encodeURIComponent(profilePic)}`,
+        { responseType: "arraybuffer" }
+      );
+
+      await react("💀");
+
+      await Gifted.sendMessage(from, {
+        image: Buffer.from(res.data),
+        caption: `⚰️ *Wasted* : @${userToWaste.split("@")[0]} 💀\nRest in pieces!`,
+        mentions: [userToWaste],
+        contextInfo: {
+                        forwardingScore: 1,
+                        isForwarded: true,
+                        forwardedNewsletterMessageInfo: {
+                            newsletterJid: newsletterJid,
+                            newsletterName: botName,
+                            serverMessageId: 143,
+                        },
+                    },
+      });
+
+    } catch (err) {
+      console.error(err);
+      await react("❌");
+      reply("❌ Failed to generate wasted image");
+    }
+  }
+);
