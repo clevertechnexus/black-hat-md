@@ -24,4 +24,6 @@ services:
       - key: AUTO_READ_STATUS
         value: "true"
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: blak_hat-db
+          property: connectionString
