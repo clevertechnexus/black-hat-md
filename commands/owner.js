@@ -579,7 +579,7 @@ gmd(
       };
 
       const path = require("path");
-      const tempDir = path.join(__dirname, "..", "gift", "temp");
+      const tempDir = path.join(__dirname, "..", "black_hat", "temp");
       const tempFileName = `vv2_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       tempFilePath = await Gifted.downloadAndSaveMediaMessage(
         mediaMessage,
@@ -679,7 +679,7 @@ gmd(
       };
 
       const path = require("path");
-      const tempDir = path.join(__dirname, "..", "gift", "temp");
+      const tempDir = path.join(__dirname, "..", "black_hat", "temp");
       const tempFileName = `vv_${Date.now()}_${Math.random().toString(36).slice(2)}`;
       tempFilePath = await Gifted.downloadAndSaveMediaMessage(
         mediaMessage,
