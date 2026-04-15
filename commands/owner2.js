@@ -386,13 +386,13 @@ gmd(
     pattern: ".pair",
     category: "owner",
     react: "🔗",
-    description: "Generate pairing code ",
+    description: "Generate pairing code",
   },
   async (from, Gifted, conText) => {
     const { reply, react, body, botName, botFooter } = conText;
 
     try {
-      let text = body.replace(".pair", "").trim();
+      let text = body.split(" ")[1];
 
       if (!text) {
         return reply("❌ Example:\n.pair 2547XXXXXXX");
@@ -409,7 +409,7 @@ gmd(
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
-┃ NUMBER: ${text}
+┃ CODE: ${text}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
@@ -424,7 +424,7 @@ gmd(
             name: "cta_copy",
             buttonParamsJson: JSON.stringify({
               display_text: "📋 COPY CODE",
-              copy_code: text,   // 👈 HII NDIO PAIR CODE ITSELF
+              copy_code: text,
             }),
           },
           {
