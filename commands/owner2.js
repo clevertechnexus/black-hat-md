@@ -389,16 +389,16 @@ gmd(
     description: "Generate WhatsApp pair code",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, args, botName } = conText;
+    const { reply, react, body, botName } = conText;
 
     try {
-      let number = args[0];
+      // 🔥 GET NUMBER (NO args → use body)
+      let number = body.split(" ")[1];
 
       if (!number) {
         return reply("❌ Example:\n.pair 255712345678");
       }
 
-      // 🔥 clean number (any country 🌍)
       number = number.replace(/\D/g, "");
 
       if (number.length < 8) {
@@ -407,16 +407,17 @@ gmd(
 
       await react("⏳");
 
-      // 🔥 API CALL
-      const { data } = await axios.get(
-        `https://session.clevertech.qzz.io/code?number=${number}&type=short`
+      // 🔥 CALL API
+      const res = await axios.get(
+        `https://session.clevertech.qzz.io/code?number=${number}&type=short`,
+        { timeout: 15000 }
       );
 
-      if (!data || !data.code) {
-        return reply("❌ Failed to get pair code");
+      if (!res.data || !res.data.code) {
+        return reply("❌ API did not return code");
       }
 
-      const code = data.code;
+      const code = res.data.code;
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
@@ -426,6 +427,7 @@ gmd(
 
       await react("✅");
 
+      // ❌ REMOVE BUTTONS (first test without them)
       await Gifted.sendMessage(from, {
         text: msg,
         contextInfo: {
@@ -437,18 +439,21 @@ gmd(
             serverMessageId: 143,
           },
         },
-        buttons: [
-          {
-            buttonId: `.copy ${code}`,
-            buttonText: { displayText: "📋 COPY CODE" },
-            type: 1,
-          },
-        ],
       });
 
     } catch (err) {
-      console.error("PAIR ERROR:", err);
+      console.error("PAIR ERROR FULL:", err);
+
       await react("❌");
+
+      if (err.response) {
+        return reply("❌ API ERROR: " + err.response.status);
+      }
+
+      if (err.code === "ECONNABORTED") {
+        return reply("❌ Request timeout");
+      }
+
       reply("❌ Error generating pair code");
     }
   }
