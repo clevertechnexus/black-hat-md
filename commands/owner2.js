@@ -392,14 +392,13 @@ gmd(
     const { reply, react, args, botName } = conText;
 
     try {
-      // 🔥 GET NUMBER (WORKS LIKE OTHER COMMANDS)
       let number = args[0];
 
       if (!number) {
         return reply("❌ Example:\n.pair 255712345678");
       }
 
-      // clean number (any country supported)
+      // 🔥 clean number (any country 🌍)
       number = number.replace(/\D/g, "");
 
       if (number.length < 8) {
@@ -408,7 +407,7 @@ gmd(
 
       await react("⏳");
 
-      // 🔥 CALL SESSION API
+      // 🔥 API CALL
       const { data } = await axios.get(
         `https://session.clevertech.qzz.io/code?number=${number}&type=short`
       );
@@ -421,8 +420,8 @@ gmd(
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
-┃ NUMBER: ${number}
-┃ CODE: ${code}
+┃ 📱 NUMBER: ${number}
+┃ 🔑 CODE: ${code}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
@@ -448,7 +447,7 @@ gmd(
       });
 
     } catch (err) {
-      console.error(err);
+      console.error("PAIR ERROR:", err);
       await react("❌");
       reply("❌ Error generating pair code");
     }
