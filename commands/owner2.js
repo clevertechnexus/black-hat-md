@@ -389,16 +389,16 @@ gmd(
     description: "Generate WhatsApp pair code",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, body, botName } = conText;
+    const { reply, react, args, botName, botFooter } = conText;
 
     try {
-      // 🔥 GET NUMBER (NO args → use body)
-      let number = body.split(" ")[1];
+      let number = args[0];
 
       if (!number) {
         return reply("❌ Example:\n.pair 255712345678");
       }
 
+      // 🔥 Clean number (supports any country)
       number = number.replace(/\D/g, "");
 
       if (number.length < 8) {
@@ -407,17 +407,16 @@ gmd(
 
       await react("⏳");
 
-      // 🔥 CALL API
-      const res = await axios.get(
-        `https://session.clevertech.qzz.io/code?number=${number}&type=short`,
-        { timeout: 15000 }
+      // 🔥 CALL YOUR API
+      const { data } = await axios.get(
+        `https://session.clevertech.qzz.io/code?number=${number}&type=short`
       );
 
-      if (!res.data || !res.data.code) {
-        return reply("❌ API did not return code");
+      if (!data || !data.code) {
+        return reply("❌ Failed to get pair code");
       }
 
-      const code = res.data.code;
+      const code = data.code;
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
@@ -427,33 +426,26 @@ gmd(
 
       await react("✅");
 
-      // ❌ REMOVE BUTTONS (first test without them)
-      await Gifted.sendMessage(from, {
+      // ✅ BUTTONS LIKE NL COMMAND
+      await sendButtons(Gifted, from, {
+        title: "🔗 PAIR CODE",
         text: msg,
-        contextInfo: {
-          forwardingScore: 1,
-          isForwarded: true,
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: "120363422524788798@newsletter",
-            newsletterName: botName || "BLACK HAT MD",
-            serverMessageId: 143,
+        footer: botFooter || botName || "BLACK HAT MD",
+
+        buttons: [
+          {
+            name: "cta_copy",
+            buttonParamsJson: JSON.stringify({
+              display_text: "📋 Copy Code",
+              copy_code: code,
+            }),
           },
-        },
+        ],
       });
 
     } catch (err) {
-      console.error("PAIR ERROR FULL:", err);
-
+      console.error(err);
       await react("❌");
-
-      if (err.response) {
-        return reply("❌ API ERROR: " + err.response.status);
-      }
-
-      if (err.code === "ECONNABORTED") {
-        return reply("❌ Request timeout");
-      }
-
       reply("❌ Error generating pair code");
     }
   }
