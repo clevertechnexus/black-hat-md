@@ -358,18 +358,17 @@ gmd(
       const channelLink = `https://whatsapp.com/channel/${code}`;
 
       // 🧠 CLEAN TEXT (ONLY NAME + ID)
-      let msg = `╭══〘〘 *📰 NEWSLETTER INFO* 〙〙═⊷\n\n`;
-      msg += `  📛 *Name:* ${meta.name || meta.subject || meta.title || "N/A"}
-      msg += `  🆔 *ID:* ${meta.id || "N/A"}\n`;
+      let msg = `╭══〘📰 NEWSLETTER INFO〙═⊷\n\n`;
+      msg += `🆔 *ID:* ${meta.id || "N/A"}\n`;
       msg += `\n╰━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
       // 🚀 BUTTON MESSAGE (ONLY COPY)
       await sendButtons(Gifted, from, {
-        title: `${botName || "BOT"} NEWSLETTER INFO`,
+        title: `${botName || "BOT"} *NEWSLETTER INFO*`,
         text: msg,
-        footer: botFooter || "Powered by Gifted Bot",
+        footer: ${botFooter} || "Powered by anonymous user",
 
         buttons: [
           {
