@@ -341,7 +341,7 @@ gmd(
       let msg =
 `╭══〘〘 *📰 NEWSLETTER* 〙〙═⊷
 ┃ ID: ${channelId}
-╰━━━━━━━━━━━━━━━⬣`;
+╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
