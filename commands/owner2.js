@@ -380,3 +380,74 @@ gmd(
     }
   }
 );
+
+gmd(
+  {
+    pattern: ".pair",
+    category: "owner",
+    react: "🔗",
+    description: "Generate pairing code ",
+  },
+  async (from, Gifted, conText) => {
+    const { reply, react, body, botName, botFooter } = conText;
+
+    try {
+      let text = body.replace(".pair", "").trim();
+
+      if (!text) {
+        return reply("❌ Example:\n.pair 2547XXXXXXX");
+      }
+
+      if (!text.startsWith("254")) {
+        return reply("❌ Tumia format 2547XXXXXXX");
+      }
+
+      await react("⏳");
+
+      const shortLink = `http://session.clevertechnexus.qzz.io//code?number=${text}&type=short`;
+      const longLink = `http://session.clevertechnexus.qzz.io//code?number=${text}&type=long`;
+
+      let msg =
+`╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
+┃ NUMBER: ${text}
+╰━━━━━━━━━━━━━━━━━━━⬣`;
+
+      await react("✅");
+
+      await sendButtons(Gifted, from, {
+        title: "🔗 PAIR GENERATOR",
+        text: msg,
+        footer: botFooter || botName || "Bot",
+
+        buttons: [
+          {
+            name: "cta_copy",
+            buttonParamsJson: JSON.stringify({
+              display_text: "📋 COPY CODE",
+              copy_code: text,   // 👈 HII NDIO PAIR CODE ITSELF
+            }),
+          },
+          {
+            name: "cta_copy",
+            buttonParamsJson: JSON.stringify({
+              display_text: "📋 COPY SHORT LINK",
+              copy_code: shortLink,
+            }),
+          },
+          {
+            name: "cta_copy",
+            buttonParamsJson: JSON.stringify({
+              display_text: "📋 COPY LONG LINK",
+              copy_code: longLink,
+            }),
+          },
+        ],
+      });
+
+    } catch (err) {
+      console.error(err);
+      await react("❌");
+      reply("❌ Failed to generate pair code");
+    }
+  }
+);
