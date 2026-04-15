@@ -386,16 +386,14 @@ gmd(
     pattern: "pair",
     on: "text",
     react: "🔗",
-    category: "system",
-    description: "Generate WhatsApp pairing code with buttons",
+    category: "owner",
+    description: "Generate WhatsApp pairing code",
   },
   async (from, Gifted, conText) => {
     const { body, reply, react, botName, botFooter } = conText;
 
     const number = body.split(" ")[1];
-    if (!number) {
-      return reply("Usage: pair 2557XXXXXXX");
-    }
+    if (!number) return reply("Usage: pair 2557XXXXXXX");
 
     const cleanNumber = number.replace(/[^0-9]/g, "");
     if (cleanNumber.length < 10) {
@@ -405,27 +403,31 @@ gmd(
     await react("⏳");
 
     try {
-      const url = `https://session.clevertechnexus.qzz.io/code?number=${cleanNumber}&type=short`;
+      const url = `https://session.clevertech.qzz.io/code?number=${cleanNumber}&type=short`;
 
       const { data } = await axios.get(url, { timeout: 60000 });
 
       if (!data || !data.code) {
         await react("❌");
-        return reply("❌ API error: no code returned");
+        return reply("❌ No pairing code returned");
       }
 
-      const msg =
-`╭══〘〘 🔗 *PAIRING RESULT* 〙〙═⊷
+      const code = data.code;
+      const fallback = data.fallback;
+
+      let msg =
+`╭══〘〘 🔗 PAIRING CODE 〙〙═⊷
 ┃ 📱 Number: ${cleanNumber}
 ┃ 🔑 Code: ${code}
+┃ ⚙️ Mode: ${fallback ? "Fallback" : "Short"}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
       await sendButtons(Gifted, from, {
-        title: "🔗 WHATSAPP PAIRING",
+        title: "🔗 WHATSAPP PAIRING SYSTEM",
         text: msg,
-        footer: botFooter || botName || "Bot System",
+        footer: botFooter || botName || "Bot",
 
         buttons: [
           {
@@ -446,7 +448,7 @@ gmd(
             name: "cta_url",
             buttonParamsJson: JSON.stringify({
               display_text: "🌐 Open API",
-              url: `https://session.clevertech.qzz.io/code?number=${cleanNumber}&type=short`,
+              url: url,
             }),
           },
         ],
@@ -455,7 +457,7 @@ gmd(
     } catch (err) {
       console.error(err);
       await react("❌");
-      return reply("❌ Failed to generate pairing code");
+      return reply("❌ Error generating pairing code");
     }
   }
 );
