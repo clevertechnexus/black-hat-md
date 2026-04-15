@@ -386,38 +386,37 @@ gmd(
     pattern: "pair",
     category: "owner",
     react: "🔗",
-    description: "Generate WhatsApp pair code from session API",
+    description: "Generate WhatsApp pair code",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, args, botName, botFooter } = conText;
+    const { reply, react, body, botName, botFooter } = conText;
 
     try {
-      let number = args[0];
+      // 🔥 GET NUMBER
+      let number = body.split(" ")[1];
 
       if (!number) {
         return reply("❌ Example:\n.pair 255712345678");
       }
 
-      number = number.toString().replace(/\s+/g, "").replace("+", "");
+      number = number.replace(/\D/g, ""); // remove non-numbers
 
-      if (!/^[0-9]{8,15}$/.test(number)) {
-        return reply("❌ Invalid number format");
+      if (number.length < 8) {
+        return reply("❌ Invalid number");
       }
 
       await react("⏳");
 
-      // 🔥 CALL YOUR SESSION SERVER
-      const url = `https://session.clevertech.qzz.io/code?number=${number}&type=short`;
+      // 🔥 CALL SESSION API
+      const res = await axios.get(
+        `https://session.clevertech.qzz.io/code?number=${number}&type=short`
+      );
 
-      const res = await axios.get(url);
-
-      const data = res.data;
-
-      if (!data || !data.code) {
-        return reply("❌ Failed to generate pair code");
+      if (!res.data || !res.data.code) {
+        return reply("❌ Failed to get code");
       }
 
-      const code = data.code;
+      const code = res.data.code;
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
@@ -433,18 +432,11 @@ gmd(
           forwardingScore: 1,
           isForwarded: true,
           forwardedNewsletterMessageInfo: {
-            newsletterJid: NEWSLETTER_JID || "120363422524788798@newsletter",
-            newsletterName: botName || "Bot",
+            newsletterJid: "120363422524788798@newsletter",
+            newsletterName: botName || "BLACK HAT MD",
             serverMessageId: 143,
           },
         },
-        buttons: [
-          {
-            buttonId: `.copy ${code}`,
-            buttonText: { displayText: "📋 COPY CODE" },
-            type: 1,
-          },
-        ],
       });
 
     } catch (err) {
