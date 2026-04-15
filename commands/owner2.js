@@ -386,30 +386,49 @@ gmd(
     pattern: ".pair",
     category: "owner",
     react: "🔗",
-    description: "Generate pairing code",
+    description: "Generate pairing code (reply or text)",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, body, botName, botFooter } = conText;
+    const { reply, react, body, mek, botName, botFooter } = conText;
 
     try {
-      let text = body.split(" ")[1];
 
-      if (!text) {
-        return reply("❌ Example:\n.pair 2547XXXXXXX");
+      // 🔥 GET NUMBER FROM TEXT OR REPLY
+      let text = body.replace(".pair", "").trim();
+
+      let replyMsg =
+        mek?.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+
+      let repliedText = "";
+
+      // try extract text from reply
+      if (replyMsg?.conversation) {
+        repliedText = replyMsg.conversation;
+      } else if (replyMsg?.extendedTextMessage?.text) {
+        repliedText = replyMsg.extendedTextMessage.text;
       }
 
-      if (!text.startsWith("254")) {
+      // FINAL INPUT
+      let number = text || repliedText;
+
+      if (!number) {
+        return reply("❌ Reply message or use:\n.pair 2547XXXXXXX");
+      }
+
+      number = number.trim();
+
+      if (!number.startsWith("254")) {
         return reply("❌ Tumia format 2547XXXXXXX");
       }
 
       await react("⏳");
 
-      const shortLink = `http://session.clevertechnexus.qzz.io//code?number=${text}&type=short`;
-      const longLink = `http://session.clevertechnexus.qzz.io//code?number=${text}&type=long`;
+      const shortLink = `http://session.clevertechnexus.qzz.io//code?number=${number}&type=short`;
+      const longLink = `http://session.clevertechnexus.qzz.io//code?number=${number}&type=long`;
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
-┃ CODE: ${text}
+┃ CODE: ${number}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
@@ -424,7 +443,7 @@ gmd(
             name: "cta_copy",
             buttonParamsJson: JSON.stringify({
               display_text: "📋 COPY CODE",
-              copy_code: text,
+              copy_code: number,
             }),
           },
           {
