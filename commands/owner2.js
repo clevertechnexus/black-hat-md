@@ -396,7 +396,7 @@ gmd(
       // 🔥 TEXT INPUT
       let text = body.replace(".pair", "").trim();
 
-      // 🔥 SMART REPLY EXTRACTION (FIXED)
+      // 🔥 SAFE REPLY EXTRACTION (FIXED FOR ALL MESSAGE TYPES)
       let quoted = mek?.message?.extendedTextMessage?.contextInfo;
 
       let replyText = "";
@@ -407,6 +407,14 @@ gmd(
 
       if (quoted?.quotedMessage?.extendedTextMessage?.text) {
         replyText = quoted.quotedMessage.extendedTextMessage.text;
+      }
+
+      if (quoted?.quotedMessage?.imageMessage?.caption) {
+        replyText = quoted.quotedMessage.imageMessage.caption;
+      }
+
+      if (quoted?.quotedMessage?.videoMessage?.caption) {
+        replyText = quoted.quotedMessage.videoMessage.caption;
       }
 
       // 🔥 FINAL NUMBER
