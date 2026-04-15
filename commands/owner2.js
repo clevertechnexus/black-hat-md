@@ -386,48 +386,23 @@ gmd(
     pattern: ".pair",
     category: "owner",
     react: "🔗",
-    description: "Generate pairing code (reply or text)",
+    description: "Generate pairing code using number only",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, body, mek, botName, botFooter } = conText;
+    const { reply, react, body, botName, botFooter } = conText;
 
     try {
 
-      // 🔥 TEXT INPUT
-      let text = body.replace(".pair", "").trim();
-
-      // 🔥 SAFE REPLY EXTRACTION (FIXED FOR ALL MESSAGE TYPES)
-      let quoted = mek?.message?.extendedTextMessage?.contextInfo;
-
-      let replyText = "";
-
-      if (quoted?.quotedMessage?.conversation) {
-        replyText = quoted.quotedMessage.conversation;
-      }
-
-      if (quoted?.quotedMessage?.extendedTextMessage?.text) {
-        replyText = quoted.quotedMessage.extendedTextMessage.text;
-      }
-
-      if (quoted?.quotedMessage?.imageMessage?.caption) {
-        replyText = quoted.quotedMessage.imageMessage.caption;
-      }
-
-      if (quoted?.quotedMessage?.videoMessage?.caption) {
-        replyText = quoted.quotedMessage.videoMessage.caption;
-      }
-
-      // 🔥 FINAL NUMBER
-      let number = text || replyText;
+      let number = body.split(" ")[1];
 
       if (!number) {
-        return reply("❌ Reply message or use:\n.pair 2547XXXXXXX");
+        return reply("❌ Example:\n.pair 2557XXXXXXX");
       }
 
-      number = number.toString().trim();
+      number = number.trim();
 
       if (!number.startsWith("254")) {
-        return reply("❌ Tumia format 2547XXXXXXX");
+        return reply("❌ user format 2557XXXXXXX");
       }
 
       await react("⏳");
@@ -437,7 +412,7 @@ gmd(
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
-┃ CODE: ${number}
+┃ NUMBER: ${number}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
@@ -451,7 +426,7 @@ gmd(
           {
             name: "cta_copy",
             buttonParamsJson: JSON.stringify({
-              display_text: "📋 COPY CODE",
+              display_text: "📋 COPY NUMBER",
               copy_code: number,
             }),
           },
