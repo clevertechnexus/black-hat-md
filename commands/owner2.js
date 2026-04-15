@@ -285,8 +285,11 @@ gmd(
   }
 );
 
-// ================== NEWSLETTER COMMAND (PRO VERSION) ==================
+// ================== NEWSLETTER COMMAND (FULL PRO) ==================
 
+let LAST_CHANNEL_LINK = "";
+
+// 🔍 Extract channel code
 function extractCode(link) {
   try {
     let clean = link.trim().split("?")[0].split("#")[0];
@@ -301,6 +304,8 @@ function extractCode(link) {
     return null;
   }
 }
+
+// ================== MAIN COMMAND ==================
 
 gmd(
   {
@@ -327,13 +332,21 @@ gmd(
 
       await react("⏳");
 
-      const meta = await Gifted.newsletterMetadata("invite", code);
+      let meta;
+      try {
+        meta = await Gifted.newsletterMetadata("invite", code);
+      } catch {
+        return reply("❌ newsletterMetadata failed (update Baileys)");
+      }
 
       if (!meta) {
         return reply("❌ Channel not found");
       }
 
-      // 🧠 FORMAT (CLEAN UI)
+      let channelLink = `https://whatsapp.com/channel/${code}`;
+      LAST_CHANNEL_LINK = channelLink;
+
+      // 🧠 FORMAT UI
       let msg = `╭━━〔 📰 NEWSLETTER INFO 〕━━⬣\n\n`;
       msg += `📛 *Name:* ${meta.name || "N/A"}\n`;
       msg += `🆔 *ID:* ${meta.id || "N/A"}\n`;
@@ -351,32 +364,58 @@ gmd(
         msg += `📅 *Created:* ${date.toLocaleDateString()}\n`;
       }
 
-      msg += `\n🔗 https://whatsapp.com/channel/${code}`;
-      msg += `\n╰━━━━━━━━━━━━━━━━━━⬣`;
+      msg += `\n🔗 _${channelLink}_`;
+      msg += `\n╰━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
+      // 📦 MESSAGE CONTENT
+      let content = {};
+
+      if (meta.image) {
+        content = {
+          image: { url: meta.image },
+          caption: msg,
+        };
+      } else {
+        content = {
+          text: msg,
+        };
+      }
+
+      // 🚀 SEND WITH BUTTONS
       await Gifted.sendMessage(from, {
-        image: meta.image ? { url: meta.image } : undefined,
-        text: msg,
-        caption: meta.image ? msg : undefined,
+        ...content,
+
+        buttons: [
+          {
+            buttonId: "copy_link",
+            buttonText: { displayText: "📋 Copy Link" },
+            type: 1,
+          },
+          {
+            buttonId: "open_link",
+            buttonText: { displayText: "🔗 Open Channel" },
+            type: 1,
+          },
+        ],
+
+        headerType: 4,
 
         contextInfo: {
           forwardingScore: 999,
           isForwarded: true,
 
-          // 🔥 CHANNEL LOOK
           forwardedNewsletterMessageInfo: {
             newsletterJid: meta.id,
             newsletterName: meta.name,
             serverMessageId: Math.floor(Math.random() * 999999),
           },
 
-          // 🚀 CLICKABLE JOIN BUTTON
           externalAdReply: {
             title: meta.name,
             body: "Tap to join WhatsApp Channel",
-            sourceUrl: `https://whatsapp.com/channel/${code}`,
+            sourceUrl: channelLink,
             mediaType: 1,
             renderLargerThumbnail: true,
           },
@@ -385,14 +424,42 @@ gmd(
 
     } catch (err) {
       console.error(err);
-
       await react("❌");
-
-      if (err.message.includes("newsletterMetadata")) {
-        return reply("❌ Update Baileys (newsletter not supported)");
-      }
-
       reply("❌ Failed to fetch channel info");
     }
+  }
+);
+
+// ================== BUTTON HANDLERS ==================
+
+gmd(
+  {
+    pattern: "copy_link",
+    dontAddCommandList: true,
+  },
+  async (from, Gifted, conText) => {
+    const { reply } = conText;
+
+    if (!LAST_CHANNEL_LINK) {
+      return reply("❌ No channel link saved");
+    }
+
+    reply(`📋 Copy this link:\n${LAST_CHANNEL_LINK}`);
+  }
+);
+
+gmd(
+  {
+    pattern: "open_link",
+    dontAddCommandList: true,
+  },
+  async (from, Gifted, conText) => {
+    const { reply } = conText;
+
+    if (!LAST_CHANNEL_LINK) {
+      return reply("❌ No channel link saved");
+    }
+
+    reply(`🔗 Open channel:\n${LAST_CHANNEL_LINK}`);
   }
 );
