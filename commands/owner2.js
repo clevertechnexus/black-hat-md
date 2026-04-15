@@ -393,29 +393,30 @@ gmd(
 
     try {
 
-      // 🔥 GET NUMBER FROM TEXT OR REPLY
+      // 🔥 TEXT INPUT
       let text = body.replace(".pair", "").trim();
 
-      let replyMsg =
-        mek?.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+      // 🔥 SMART REPLY EXTRACTION (FIXED)
+      let quoted = mek?.message?.extendedTextMessage?.contextInfo;
 
-      let repliedText = "";
+      let replyText = "";
 
-      // try extract text from reply
-      if (replyMsg?.conversation) {
-        repliedText = replyMsg.conversation;
-      } else if (replyMsg?.extendedTextMessage?.text) {
-        repliedText = replyMsg.extendedTextMessage.text;
+      if (quoted?.quotedMessage?.conversation) {
+        replyText = quoted.quotedMessage.conversation;
       }
 
-      // FINAL INPUT
-      let number = text || repliedText;
+      if (quoted?.quotedMessage?.extendedTextMessage?.text) {
+        replyText = quoted.quotedMessage.extendedTextMessage.text;
+      }
+
+      // 🔥 FINAL NUMBER
+      let number = text || replyText;
 
       if (!number) {
         return reply("❌ Reply message or use:\n.pair 2547XXXXXXX");
       }
 
-      number = number.trim();
+      number = number.toString().trim();
 
       if (!number.startsWith("254")) {
         return reply("❌ Tumia format 2547XXXXXXX");
