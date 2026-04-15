@@ -357,48 +357,33 @@ gmd(
 
       const channelLink = `https://whatsapp.com/channel/${code}`;
 
-      // 🧠 CLEAN TEXT
+      // 🧠 CLEAN TEXT (ONLY NAME + ID)
       let msg = `╭══〘〘 *📰 NEWSLETTER INFO* 〙〙═⊷\n\n`;
-      msg += `📛 *Name:* ${meta.name || "N/A"}\n`;
-      msg += `🆔 *ID:* ${meta.id || "N/A"}\n`;
-
-      if (meta.description) {
-        msg += `📝 *Description:* ${meta.description}\n`;
-      }
-
-      if (meta.subscriberCount !== undefined) {
-        msg += `👥 *Subscribers:* ${meta.subscriberCount.toLocaleString()}\n`;
-      }
-
-      if (meta.creationTime) {
-        const date = new Date(meta.creationTime * 1000);
-        msg += `📅 *Created:* ${date.toLocaleDateString()}\n`;
-      }
-
-      msg += `\n🔗 _${channelLink}_`;
+      msg += `  📛 *Name:* ${meta.name || "N/A"}\n`;
+      msg += `  🆔 *ID:* ${meta.id || "N/A"}\n`;
       msg += `\n╰━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
-      // 🚀 BUTTON MESSAGE
+      // 🚀 BUTTON MESSAGE (ONLY COPY)
       await sendButtons(Gifted, from, {
         title: `${botName || "BOT"} NEWSLETTER INFO`,
         text: msg,
-        footer: botFooter || "Powered by Anonymous user",
+        footer: botFooter || "Powered by Gifted Bot",
 
         buttons: [
           {
             name: "cta_copy",
             buttonParamsJson: JSON.stringify({
-              display_text: "📋 Copy Link",
-              copy_code: channelLink,
+              display_text: "📋 Copy Channel ID",
+              copy_code: meta.id || code,
             }),
           },
           {
             name: "cta_copy",
             buttonParamsJson: JSON.stringify({
-              display_text: "🆔 Copy ID",
-              copy_code: meta.id || code,
+              display_text: "🔗 Copy Link",
+              copy_code: channelLink,
             }),
           },
         ],
