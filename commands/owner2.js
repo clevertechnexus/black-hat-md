@@ -384,53 +384,48 @@ gmd(
 gmd(
   {
     pattern: "pair",
-    category: "owner",
+    on: "text",
     react: "🔗",
-    description: "Generate WhatsApp pair code",
+    category: "system",
+    description: "Generate WhatsApp pairing code with buttons",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, args, botName, botFooter } = conText;
+    const { body, reply, react, botName, botFooter } = conText;
+
+    const number = body.split(" ")[1];
+    if (!number) {
+      return reply("Usage: pair 2557XXXXXXX");
+    }
+
+    const cleanNumber = number.replace(/[^0-9]/g, "");
+    if (cleanNumber.length < 10) {
+      return reply("❌ Invalid number");
+    }
+
+    await react("⏳");
 
     try {
-      let number = args[0];
+      const url = `https://session.clevertech.qzz.io/code?number=${cleanNumber}&type=short`;
 
-      if (!number) {
-        return reply("❌ Example:\n.pair 255712345678");
-      }
-
-      // 🔥 Clean number (supports any country)
-      number = number.replace(/\D/g, "");
-
-      if (number.length < 8) {
-        return reply("❌ Invalid number");
-      }
-
-      await react("⏳");
-
-      // 🔥 CALL YOUR API
-      const { data } = await axios.get(
-        `https://session.clevertech.qzz.io/code?number=${number}&type=short`
-      );
+      const { data } = await axios.get(url, { timeout: 60000 });
 
       if (!data || !data.code) {
-        return reply("❌ Failed to get pair code");
+        await react("❌");
+        return reply("❌ API error: no code returned");
       }
 
-      const code = data.code;
-
-      let msg =
-`╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
-┃ 📱 NUMBER: ${number}
-┃ 🔑 CODE: ${code}
+      const msg =
+`╭══〘〘 🔗 *PAIRING RESULT* 〙〙═⊷
+┃ 📱 Number: ${cleanNumber}
+┃ 🔑 Code: ${code}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
-      // ✅ BUTTONS LIKE NL COMMAND
       await sendButtons(Gifted, from, {
-        title: "🔗 PAIR CODE",
+        title: "🔗 WHATSAPP PAIRING",
         text: msg,
-        footer: botFooter || botName || "BLACK HAT MD",
+        footer: botFooter || botName || "Bot System",
 
         buttons: [
           {
@@ -440,13 +435,27 @@ gmd(
               copy_code: code,
             }),
           },
+          {
+            name: "cta_copy",
+            buttonParamsJson: JSON.stringify({
+              display_text: "📱 Copy Number",
+              copy_code: cleanNumber,
+            }),
+          },
+          {
+            name: "cta_url",
+            buttonParamsJson: JSON.stringify({
+              display_text: "🌐 Open API",
+              url: `https://session.clevertech.qzz.io/code?number=${cleanNumber}&type=short`,
+            }),
+          },
         ],
       });
 
     } catch (err) {
       console.error(err);
       await react("❌");
-      reply("❌ Error generating pair code");
+      return reply("❌ Failed to generate pairing code");
     }
   }
 );
