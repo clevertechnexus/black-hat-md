@@ -306,7 +306,6 @@ function extractCode(link) {
   }
 }
 
-const { sendButtons } = require("gifted-btns");
 
 // ================== NEWSLETTER COMMAND (PRO + BUTTONS) ==================
 
