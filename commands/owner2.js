@@ -359,7 +359,7 @@ gmd(
 
       // 🧠 CLEAN TEXT (ONLY NAME + ID)
       let msg = `╭══〘〘 *📰 NEWSLETTER INFO* 〙〙═⊷\n\n`;
-      msg += `  📛 *Name:* ${meta.name || "N/A"}\n`;
+      msg += `  📛 *Name:* ${meta.name || meta.subject || meta.title || "N/A"}
       msg += `  🆔 *ID:* ${meta.id || "N/A"}\n`;
       msg += `\n╰━━━━━━━━━━━━━━━⬣`;
 
