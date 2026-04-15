@@ -383,32 +383,43 @@ gmd(
 
 gmd(
   {
-    pattern: ".pair",
+    pattern: "pair",
     category: "owner",
     react: "🔗",
-    description: "Generate pairing code using number only",
+    description: "Generate pairing code (any country number)",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, body, botName, botFooter } = conText;
+    const { reply, react, args, mek, botName, botFooter } = conText;
 
     try {
+      let number = args[0];
 
-      let number = body.split(" ")[1];
+      // 🔥 mention support
+      const mentioned =
+        mek?.message?.extendedTextMessage?.contextInfo?.mentionedJid;
 
-      if (!number) {
-        return reply("❌ Example:\n.pair 2557XXXXXXX");
+      if (mentioned && mentioned.length > 0) {
+        number = mentioned[0].split("@")[0];
       }
 
-      number = number.trim();
+      if (!number) {
+        return reply("❌ Example:\n.pair +255794469700\nOR mention user");
+      }
 
-      if (!number.startsWith("254")) {
-        return reply("❌ user format 2557XXXXXXX");
+      // clean number
+      number = number.toString().trim();
+      number = number.replace(/\s+/g, "");
+      number = number.replace("+", ""); // remove +
+
+      if (!/^[0-9]{8,15}$/.test(number)) {
+        return reply("❌ Invalid number format");
       }
 
       await react("⏳");
 
+      // 🔥 YOUR FORMAT (GLOBAL)
       const shortLink = `http://session.clevertechnexus.qzz.io//code?number=${number}&type=short`;
-      const longLink = `http://session.clevertechnexus.qzz.io//code?number=${number}&type=long`;
+      const longLink  = `http://session.clevertechnexus.qzz.io//code?number=${number}&type=long`;
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
