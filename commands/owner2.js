@@ -309,6 +309,8 @@ function extractCode(link) {
 
 // ================== NEWSLETTER COMMAND (PRO + BUTTONS) ==================
 
+const { sendButtons } = require("gifted-btns");
+
 function extractCode(link) {
   try {
     let clean = link.trim().split("?")[0].split("#")[0];
@@ -357,24 +359,40 @@ gmd(
 
       const channelLink = `https://whatsapp.com/channel/${code}`;
 
-      // 🧠 CLEAN TEXT (ONLY NAME + ID)
-      let msg = `╭══〘📰 NEWSLETTER INFO〙═⊷\n\n`;
+      // 🧠 CLEAN TEXT (NO NAME)
+      let msg = `╭══〘〘 *📰 NEWSLETTER INFO* 〙〙═⊷\n\n`;
+
       msg += `🆔 *ID:* ${meta.id || "N/A"}\n`;
+
+      if (meta.description) {
+        msg += `📝 *Description:* ${meta.description}\n`;
+      }
+
+      if (meta.subscriberCount !== undefined) {
+        msg += `👥 *Subscribers:* ${meta.subscriberCount.toLocaleString()}\n`;
+      }
+
+      if (meta.creationTime) {
+        const date = new Date(meta.creationTime * 1000);
+        msg += `📅 *Created:* ${date.toLocaleDateString()}\n`;
+      }
+
+      msg += `\n🔗 _${channelLink}_`;
       msg += `\n╰━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
-      // 🚀 BUTTON MESSAGE (ONLY COPY)
+      // 🚀 BUTTON MESSAGE
       await sendButtons(Gifted, from, {
-        title: `${botName || "BOT"} *NEWSLETTER INFO*`,
+        title: `${botName || "BOT"} NEWSLETTER INFO`,
         text: msg,
-        footer: ${botFooter} || "Powered by anonymous user",
+        footer: ${botFooter} || "Powered by Anonymous user",
 
         buttons: [
           {
             name: "cta_copy",
             buttonParamsJson: JSON.stringify({
-              display_text: "📋 Copy Channel ID",
+              display_text: "📋 Copy ID",
               copy_code: meta.id || code,
             }),
           },
