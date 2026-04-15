@@ -381,35 +381,26 @@ gmd(
   }
 );
 
+const axios = require("axios");
+
 gmd(
   {
     pattern: "pair",
     category: "owner",
     react: "🔗",
-    description: "Generate pairing code (any country number)",
+    description: "Generate WhatsApp pair code from session API",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, args, mek, botName, botFooter } = conText;
+    const { reply, react, args, botName, botFooter } = conText;
 
     try {
       let number = args[0];
 
-      // 🔥 mention support
-      const mentioned =
-        mek?.message?.extendedTextMessage?.contextInfo?.mentionedJid;
-
-      if (mentioned && mentioned.length > 0) {
-        number = mentioned[0].split("@")[0];
-      }
-
       if (!number) {
-        return reply("❌ Example:\n.pair +255794469700\nOR mention user");
+        return reply("❌ Example:\n.pair 255712345678");
       }
 
-      // clean number
-      number = number.toString().trim();
-      number = number.replace(/\s+/g, "");
-      number = number.replace("+", ""); // remove +
+      number = number.toString().replace(/\s+/g, "").replace("+", "");
 
       if (!/^[0-9]{8,15}$/.test(number)) {
         return reply("❌ Invalid number format");
@@ -417,43 +408,43 @@ gmd(
 
       await react("⏳");
 
-      // 🔥 YOUR FORMAT (GLOBAL)
-      const shortLink = `http://session.clevertechnexus.qzz.io//code?number=${number}&type=short`;
-      const longLink  = `http://session.clevertechnexus.qzz.io//code?number=${number}&type=long`;
+      // 🔥 CALL YOUR SESSION SERVER
+      const url = `https://session.clevertech.qzz.io/code?number=${number}&type=short`;
+
+      const res = await axios.get(url);
+
+      const data = res.data;
+
+      if (!data || !data.code) {
+        return reply("❌ Failed to generate pair code");
+      }
+
+      const code = data.code;
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
 ┃ NUMBER: ${number}
+┃ CODE: ${code}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
 
-      await sendButtons(Gifted, from, {
-        title: "🔗 PAIR GENERATOR",
+      await Gifted.sendMessage(from, {
         text: msg,
-        footer: botFooter || botName || "Bot",
-
+        contextInfo: {
+          forwardingScore: 1,
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: NEWSLETTER_JID || "120363422524788798@newsletter",
+            newsletterName: botName || "Bot",
+            serverMessageId: 143,
+          },
+        },
         buttons: [
           {
-            name: "cta_copy",
-            buttonParamsJson: JSON.stringify({
-              display_text: "📋 COPY NUMBER",
-              copy_code: number,
-            }),
-          },
-          {
-            name: "cta_copy",
-            buttonParamsJson: JSON.stringify({
-              display_text: "📋 COPY SHORT LINK",
-              copy_code: shortLink,
-            }),
-          },
-          {
-            name: "cta_copy",
-            buttonParamsJson: JSON.stringify({
-              display_text: "📋 COPY LONG LINK",
-              copy_code: longLink,
-            }),
+            buttonId: `.copy ${code}`,
+            buttonText: { displayText: "📋 COPY CODE" },
+            type: 1,
           },
         ],
       });
@@ -461,7 +452,7 @@ gmd(
     } catch (err) {
       console.error(err);
       await react("❌");
-      reply("❌ Failed to generate pair code");
+      reply("❌ Error generating pair code");
     }
   }
 );
