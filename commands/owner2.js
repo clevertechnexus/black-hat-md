@@ -286,27 +286,6 @@ gmd(
   }
 );
 
-// ================== NEWSLETTER COMMAND (FULL PRO) ==================
-
-let LAST_CHANNEL_LINK = "";
-
-// 🔍 Extract channel code
-function extractCode(link) {
-  try {
-    let clean = link.trim().split("?")[0].split("#")[0];
-
-    const match = clean.match(/channel\/([A-Za-z0-9]+)/i);
-    if (match) return match[1];
-
-    if (/^[A-Za-z0-9]+$/.test(clean)) return clean;
-
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-
 // ================== NEWSLETTER COMMAND (PRO + BUTTONS) ==================
 
 const { sendButtons } = require("gifted-btns");
