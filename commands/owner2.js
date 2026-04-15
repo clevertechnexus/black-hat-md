@@ -381,8 +381,6 @@ gmd(
   }
 );
 
-const axios = require("axios");
-
 gmd(
   {
     pattern: "pair",
