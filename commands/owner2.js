@@ -389,17 +389,18 @@ gmd(
     description: "Generate WhatsApp pair code",
   },
   async (from, Gifted, conText) => {
-    const { reply, react, body, botName, botFooter } = conText;
+    const { reply, react, args, botName } = conText;
 
     try {
-      // 🔥 GET NUMBER
-      let number = body.split(" ")[1];
+      // 🔥 GET NUMBER (WORKS LIKE OTHER COMMANDS)
+      let number = args[0];
 
       if (!number) {
         return reply("❌ Example:\n.pair 255712345678");
       }
 
-      number = number.replace(/\D/g, ""); // remove non-numbers
+      // clean number (any country supported)
+      number = number.replace(/\D/g, "");
 
       if (number.length < 8) {
         return reply("❌ Invalid number");
@@ -408,15 +409,15 @@ gmd(
       await react("⏳");
 
       // 🔥 CALL SESSION API
-      const res = await axios.get(
+      const { data } = await axios.get(
         `https://session.clevertech.qzz.io/code?number=${number}&type=short`
       );
 
-      if (!res.data || !res.data.code) {
-        return reply("❌ Failed to get code");
+      if (!data || !data.code) {
+        return reply("❌ Failed to get pair code");
       }
 
-      const code = res.data.code;
+      const code = data.code;
 
       let msg =
 `╭══〘〘 *🔗 PAIR CODE* 〙〙═⊷
@@ -437,6 +438,13 @@ gmd(
             serverMessageId: 143,
           },
         },
+        buttons: [
+          {
+            buttonId: `.copy ${code}`,
+            buttonText: { displayText: "📋 COPY CODE" },
+            type: 1,
+          },
+        ],
       });
 
     } catch (err) {
