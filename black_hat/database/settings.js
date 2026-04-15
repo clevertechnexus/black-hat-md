@@ -60,7 +60,7 @@ const DEFAULT_SETTINGS = {
     AUTO_READ_MESSAGES: "off",
     AUTO_BIO: "false",
     AUTO_BLOCK: "",
-    YT: "youtube.com/@CleverTech-nexus",
+    YT: "youtube.com/@Clever_Tech_Nexus",
     NEWSLETTER_JID: "120363422524788798@newsletter",
     GC_JID: "FHT9hXCbu1z4XiPbn7HKMw",
     NEWSLETTER_URL: "https://whatsapp.com/channel/0029Vb73SRl1CYoLWtyr4u1X",
