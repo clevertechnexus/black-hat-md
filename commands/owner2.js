@@ -288,8 +288,6 @@ gmd(
 
 // ================== NEWSLETTER COMMAND (PRO + BUTTONS) ==================
 
-const { sendButtons } = require("gifted-btns");
-
 function extractCode(link) {
   try {
     let clean = link.trim().split("?")[0].split("#")[0];
