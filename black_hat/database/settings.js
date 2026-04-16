@@ -36,7 +36,7 @@ const DEFAULT_SETTINGS = {
     BOT_NAME: "𝐁𝐋𝐀𝐂𝐊 𝐇𝐀𝐓-𝐌𝐃",
     FOOTER: "ᴘᴏᴡᴇʀᴇᴅ ʙʏ 𝑨𝒏𝒐𝒏𝒚𝒎𝒐𝒖𝒔 𝒖𝒔𝒆𝒓🥷",
     CAPTION: "©𝟐𝟎𝟐𝟓 𝐁𝐋𝐀𝐂𝐊 𝐇𝐀𝐓-𝐌𝐃 𝐕𝟓",
-    BOT_PIC: "https://img.sanishtech.com/u/53b6737184e8b6823e83a0abd5c91d06.jpg",
+    BOT_PIC: "https://www.image2url.com/r2/default/images/1776338825845-caa56d77-b8dd-46d7-8380-753c6519a578.jpg",
     VERSION: packageJson.version || "5.0.0",
     MODE: config.MODE || "public",
     WARN_COUNT: "3",
