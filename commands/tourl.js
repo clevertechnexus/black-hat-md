@@ -5,15 +5,17 @@ const { sendButtons } = require('gifted-btns');
 
 gmd({
     pattern: "blackhatcdn",
+    aliases: ["url5"],
     react: "⬆️",
     category: "uploader",
     description: "Upload any file to blackhatcdn",
 }, async (from, Gifted, conText) => {
-    await handleUpload(from, Gifted, conText, 'giftedcdn');
+    await handleUpload(from, Gifted, conText, 'blackhatcdn');
 });
 
 gmd({
     pattern: "githubcdn",
+    aliases: ["url1"],
     react: "⬆️",
     category: "uploader",
     description: "Upload any file to Github Repo",
@@ -23,7 +25,7 @@ gmd({
 
 gmd({
     pattern: "catbox",
-    aliases: ["url"],
+    aliases: ["url2"],
     react: "⬆️",
     category: "uploader",
     description: "Upload any file to Catbox",
@@ -33,6 +35,7 @@ gmd({
 
 gmd({
     pattern: "pixhost",
+    aliases: ["url3"],
     react: "🖼️",
     category: "uploader",
     description: "Upload images to Pixhost",
@@ -42,6 +45,7 @@ gmd({
 
 gmd({
     pattern: "imgbb",
+    aliases: ["url4"],
     react: "📷",
     category: "uploader",
     description: "Upload images to ImgBB",
@@ -84,8 +88,8 @@ async function handleUpload(from, Gifted, conText, service) {
             mediaType = 'image';
         } 
         else if (quotedVideo) {
-            if (service !== 'catbox' && service !== 'giftedcdn' && service !== 'githubcdn') {
-                return reply(`❌ ${service} only supports images. Use ${botPrefix}catbox or ${botPrefix}giftedcdn or ${botPrefix}githubcdn  for videos and any other file type.`);
+            if (service !== 'catbox' && service !== 'blackhatcdn' && service !== 'githubcdn') {
+                return reply(`❌ ${service} only supports images. Use ${botPrefix}catbox or ${botPrefix}blackhatcdn or ${botPrefix}githubcdn  for videos and any other file type.`);
             }
             buffer = await getMediaBuffer(quotedVideo, "video");
             fileExt = '.mp4';
@@ -94,8 +98,8 @@ async function handleUpload(from, Gifted, conText, service) {
             mediaType = 'video';
         } 
         else if (quotedAudio) {
-            if (service !== 'catbox' && service !== 'giftedcdn' && service !== 'githubcdn') {
-                return reply(`❌ ${service} only supports images. Use ${botPrefix}catbox or ${botPrefix}giftedcdn or ${botPrefix}githubcdn  for audios and any other file type.`);
+            if (service !== 'catbox' && service !== 'blackhatcdn' && service !== 'githubcdn') {
+                return reply(`❌ ${service} only supports images. Use ${botPrefix}catbox or ${botPrefix}blackhatcdn or ${botPrefix}githubcdn  for audios and any other file type.`);
             }
             buffer = await getMediaBuffer(quotedAudio, "audio");
             fileExt = '.mp3';
@@ -115,8 +119,8 @@ async function handleUpload(from, Gifted, conText, service) {
             mediaType = 'sticker';
         } 
         else if (quotedDocument) {
-            if (service !== 'catbox' && service !== 'giftedcdn' && service !== 'githubcdn') {
-                return reply(`❌ ${service} only supports images. Use ${botPrefix}catbox or ${botPrefix}giftedcdn or ${botPrefix}githubcdn  for documents and any other file type.`);
+            if (service !== 'catbox' && service !== 'blackhatcdn' && service !== 'githubcdn') {
+                return reply(`❌ ${service} only supports images. Use ${botPrefix}catbox or ${botPrefix}blackhatcdn or ${botPrefix}githubcdn  for documents and any other file type.`);
             }
             buffer = await getMediaBuffer(quotedDocument, "document");
             fileExt = quotedDocument.fileName ? path.extname(quotedDocument.fileName).toLowerCase() : '.bin';
@@ -127,8 +131,8 @@ async function handleUpload(from, Gifted, conText, service) {
             return reply(`❌ Unsupported message type.`);
         }
 
-        if (!isImage && service !== 'catbox' && service !== 'giftedcdn' && service !== 'githubcdn') {
-            return reply(`❌ ${service} only supports image files. Use ${botPrefix}catbox or ${botPrefix}giftedcdn or ${botPrefix}githubcdn for any other file types.`);
+        if (!isImage && service !== 'catbox' && service !== 'blackhatcdn' && service !== 'githubcdn') {
+            return reply(`❌ ${service} only supports image files. Use ${botPrefix}catbox or ${botPrefix}blackhatcdn or ${botPrefix}githubcdn for any other file types.`);
         }
 
         let uploadResult;
