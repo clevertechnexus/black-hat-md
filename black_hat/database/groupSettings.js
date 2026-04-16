@@ -256,7 +256,7 @@ async function resetAntiGroupMentionWarnings(groupJid, userJid) {
 }
 
 const DEFAULT_BAD_WORDS = [
-    'fuck', 'shit', 'bitch', 'ass', 'asshole', 'bastard', 'damn', 'dick', 'pussy' 'babu', 'babo', 
+    'fuck', 'shit', 'bitch', 'ass', 'asshole', 'bastard', 'damn', 'dick', 'pussy', 'babu', 'babo', 
     'cunt', 'whore', 'slut', 'fag', 'nigga', 'nigger', 'retard', 'motherfucker',
     'cock', 'prick', 'bullshit', 'jackass', 'dumbass', 'idiot', 'stupid',
     'malaya', 'mkundu', 'matako', 'kumamako', 'kuma', 'fala', 'mjinga', 'pumbavu'
