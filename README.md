@@ -5,7 +5,7 @@
 
 
 <details>
-<summary>NOTICE!!! (TAP TO READ)</summary>
+<summary>NOTICE!! (TAP TO READ)</summary>
 
 - For Vps/Panel Deployment You must download the zip from panel sections or from below link else your youtube downloaders wont work on panel.
 
