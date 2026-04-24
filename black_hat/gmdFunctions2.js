@@ -618,71 +618,101 @@ async function getAIResponse(query) {
     }
 }
 
-function GiftedChatBot(Gifted, chatBot, chatBotMode, createContext, createContext2, googleTTS) {
-    if (chatBot === 'true' || chatBot === 'audio') {
-        Gifted.ev.on("messages.upsert", async ({ messages }) => {
-            try {
-                const msg = messages[0];
-                if (!msg?.message || msg.key.fromMe) return;
-                
-                const jid = msg.key.remoteJid;
-                const isGroup = jid.endsWith('@g.us');
-                
-                if (chatBotMode === 'groups' && !isGroup) return;
-                if (chatBotMode === 'inbox' && isGroup) return;
-                
-                let text = '';
-                
-                if (msg.message.conversation) {
-                    text = msg.message.conversation;
-                } else if (msg.message.extendedTextMessage?.text) {
-                    text = msg.message.extendedTextMessage.text;
-                } else if (msg.message.imageMessage?.caption) {
-                    text = msg.message.imageMessage.caption;
-                }
+async function GiftedChatBot(
+  Gifted,
+  chatBot,
+  chatBotMode,
+  createContext,
+  createContext2,
+  googleTTS
+) {
+  if (chatBot !== true && chatBot !== 'true' && chatBot !== 'audio') return;
 
-                if (!text || typeof text !== 'string') return;
+  Gifted.ev.on("messages.upsert", async ({ messages }) => {
+    try {
+      const msg = messages?.[0];
+      if (!msg || !msg.message || msg.key?.fromMe) return;
 
-                const settings = await getAllSettings();
-                const botName = settings.BOT_NAME || '𝐁𝐋𝐀𝐂𝐊 𝐇𝐀𝐓-𝐌𝐃';
-                const aiResponse = await getAIResponse(text);
+      const jid = msg.key?.remoteJid;
+      if (!jid) return;
 
-                if (chatBot === "true") {
-                    await Gifted.sendMessage(jid, { 
-                        text: String(aiResponse),
-                        ...(await createContext(jid, {
-                            title: `${botName} 𝐂𝐇𝐀𝐓 𝐁𝐎𝐓`,
-                            body: '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝑨𝒏𝒐𝒏𝒚𝒎𝒐𝒖𝒔 𝒖𝒔𝒆𝒓🥷'
-                        }))
-                    }, { quoted: msg });
-                }
+      const isGroup = jid.endsWith('@g.us');
 
-                if (chatBot === 'audio') {
-                    const ttsText = processForTTS(String(aiResponse));
-                    if (ttsText) {
-                        const audioUrl = googleTTS.getAudioUrl(ttsText, {
-                            lang: "en",
-                            slow: false,
-                            host: "https://translate.google.com",
-                        });
+      if (chatBotMode === 'groups' && !isGroup) return;
+      if (chatBotMode === 'inbox' && isGroup) return;
 
-                        await Gifted.sendMessage(jid, {
-                            audio: { url: audioUrl },
-                            mimetype: "audio/mpeg",
-                            ptt: true,
-                            waveform: [1000, 0, 1000, 0, 1000, 0, 1000],
-                            ...(await createContext2(jid, {
-                               title: `${botName} 𝐀𝐔𝐃𝐈𝐎-𝐂𝐇𝐀𝐓 𝐁𝐎𝐓`,
-                               body: '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝑨𝒏𝒐𝒏𝒚𝒎𝒐𝒖𝒔 𝒖𝒔𝒆𝒓🥷'
-                            }))
-                        }, { quoted: msg });
-                    }
-                }
-            } catch (error) {
-                console.error("Message processing error:", error);
-            }
-        });
+      let text = '';
+
+      const m = msg.message;
+
+      text =
+        m.conversation ||
+        m.extendedTextMessage?.text ||
+        m.imageMessage?.caption ||
+        m.videoMessage?.caption ||
+        m.buttonsResponseMessage?.selectedButtonId ||
+        m.listResponseMessage?.singleSelectReply?.selectedRowId ||
+        '';
+
+      if (!text || typeof text !== 'string') return;
+
+      const settings = await getAllSettings().catch(() => ({}));
+      const botName = settings?.BOT_NAME || '𝐁𝐋𝐀𝐂𝐊 𝐇𝐀𝐓-𝐌𝐃';
+
+      const aiResponse = await getAIResponse(text).catch(
+        () => "⚠️ AI error, try again."
+      );
+
+      // 📩 TEXT MODE
+      if (chatBot === true || chatBot === 'true') {
+        await Gifted.sendMessage(
+          jid,
+          {
+            text: String(aiResponse),
+            ...(await createContext(jid, {
+              title: `${botName} 𝐂𝐇𝐀𝐓 𝐁𝐎𝐓`,
+              body: '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝑨𝒏𝒐𝒏𝒚𝒎𝒐𝒖𝒔 𝒖𝒔𝒆𝒓🥷',
+            })),
+          },
+          { quoted: msg }
+        );
+      }
+
+      // 🔊 AUDIO MODE
+      if (chatBot === 'audio') {
+        const ttsText = processForTTS(String(aiResponse));
+
+        if (!ttsText) return;
+
+        try {
+          const audioUrl = googleTTS.getAudioUrl(ttsText, {
+            lang: "en",
+            slow: false,
+            host: "https://translate.google.com",
+          });
+
+          await Gifted.sendMessage(
+            jid,
+            {
+              audio: { url: audioUrl },
+              mimetype: "audio/mpeg",
+              ptt: true,
+              waveform: [100, 0, 100, 0, 100, 0, 100],
+              ...(await createContext2(jid, {
+                title: `${botName} 𝐀𝐔𝐃𝐈𝐎-𝐂𝐇𝐀𝐓 𝐁𝐎𝐓`,
+                body: '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝑨𝒏𝒐𝒏𝒚𝒎𝒐𝒖𝒔 𝒖𝒔𝒆𝒓🥷',
+              })),
+            },
+            { quoted: msg }
+          );
+        } catch (err) {
+          console.error("TTS Error:", err);
+        }
+      }
+    } catch (error) {
+      console.error("Message processing error:", error);
     }
+  });
 }
 
 
