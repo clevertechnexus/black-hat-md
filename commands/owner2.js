@@ -340,7 +340,7 @@ gmd(
 
       let msg =
 `╭══〘〘 *📰 NEWSLETTER* 〙〙═⊷
-┃ ID: ${channelId}
+┃🆔 ${channelId}
 ╰━━━━━━━━━━━━━━━━━━━⬣`;
 
       await react("✅");
@@ -403,7 +403,7 @@ gmd(
     await react("⏳");
 
     try {
-      const url = `https://session.clevertechnexus.qzz.io/code?number=${cleanNumber}&type=short`;
+      const url = `https://session1.clevertechnexus.qzz.io/code?number=${cleanNumber}&type=short`;
 
       const { data } = await axios.get(url, { timeout: 60000 });
 
