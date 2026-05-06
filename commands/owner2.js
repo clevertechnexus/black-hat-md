@@ -24,10 +24,11 @@ gmd(
     react: "🖥️",
     category: "owner",
     dontAddCommandList: true,
-    description: "Run a shell command. Usage: $ <command>",
+    description: "Run shell command (OWNER ONLY)",
   },
   async (from, Gifted, conText) => {
     const { reply, react, isSuperUser, body } = conText;
+
     if (!body.startsWith("$")) return;
     if (!isSuperUser) return;
 
@@ -35,14 +36,39 @@ gmd(
     if (!shellCmd) return reply("Usage: $ <command>");
 
     await react("⏳");
-    _shellExec(shellCmd, { timeout: 30000, maxBuffer: 1024 * 1024 * 5 }, async (err, stdout, stderr) => {
-      const output = (stdout || "") + (stderr ? `\n[stderr]\n${stderr}` : "");
-      const result = err && !output.trim()
-        ? `❌ Error: ${err.message}`
-        : output.trim() || "(no output)";
-      await react("✅");
-      await reply("```\n" + result.slice(0, 4000) + "\n```");
-    });
+
+    try {
+      _shellExec(
+        shellCmd,
+        {
+          timeout: 30000,
+          maxBuffer: 1024 * 1024 * 10, // 10MB safe buffer
+        },
+        async (err, stdout, stderr) => {
+          let output = (stdout || "") + (stderr ? `\n[stderr]\n${stderr}` : "");
+
+          if (err && !output.trim()) {
+            output = `❌ Error: ${err.message}`;
+          }
+
+          output = output.trim() || "(no output)";
+
+          // SAFE LIMIT (avoid WhatsApp message crash)
+          if (output.length > 4000) {
+            output =
+              output.slice(0, 4000) +
+              "\n\n⚠️ Output truncated...";
+          }
+
+          await react("✅");
+
+          await reply("```bash\n" + output + "\n```");
+        }
+      );
+    } catch (e) {
+      await react("❌");
+      return reply("❌ Shell execution failed: " + e.message);
+    }
   }
 );
 
@@ -458,6 +484,142 @@ gmd(
       console.error(err);
       await react("❌");
       return reply("❌ Error generating pairing code");
+    }
+  }
+);
+
+const canvacord = require("canvacord");
+
+gmd(
+    {
+        pattern: "wanted",
+        aliases: ["wanted"],
+        react: "🎉",
+        category: "fun",
+        description: "Create a wanted poster image for a user",
+    },
+    async (from, Gifted, conText) => {
+        const { mek, reply, react, mentionByTag } = conText;
+
+        const newsletterJid = "120363422524788798@newsletter";
+        const botName = "BLACK HAT MD";
+
+        let targetJid;
+
+        try {
+            // quoted user
+            if (mek.message?.extendedTextMessage?.contextInfo?.quotedMessage) {
+                targetJid =
+                    mek.message.extendedTextMessage.contextInfo.participant;
+            }
+            // mention
+            else if (mentionByTag && mentionByTag[0]) {
+                targetJid = mentionByTag[0];
+            }
+            // fallback sender
+            else {
+                targetJid = mek.sender;
+            }
+
+            await react("⏳");
+
+            let pp;
+            try {
+                pp = await Gifted.profilePictureUrl(targetJid, "image");
+            } catch {
+                pp =
+                    "https://i.pinimg.com/564x/84/09/12/840912dd744e6662ab211b8070b5d84c.jpg";
+            }
+
+            const result = await canvacord.Canvacord.wanted(pp);
+
+            await Gifted.sendMessage(from, {
+                image: result,
+                caption: `🚨 *WANTED* 🚨\n\n👤 User: @${targetJid.split("@")[0]}\n💀 Status: DEAD OR ALIVE`,
+                mentions: [targetJid],
+                contextInfo: {
+                    forwardingScore: 999,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: newsletterJid,
+                        newsletterName: botName,
+                        serverMessageId: Date.now(),
+                    },
+                },
+            });
+
+            await react("✅");
+        } catch (err) {
+            await react("❌");
+            return reply("❌ Failed to create wanted image: " + err.message);
+        }
+    }
+);
+
+gmd(
+  {
+    pattern: "slap",
+    aliases: ["slap"],
+    react: "🎉",
+    category: "fun",
+    description: "Slap a tagged or quoted user with image",
+  },
+  async (from, Gifted, conText) => {
+    const { m, reply, react, mentionByTag } = conText;
+
+    if (!m.quoted && !mentionByTag?.[0]) {
+      return reply("*❄️ Tag or reply to someone to slap!*");
+    }
+
+    let target;
+
+    // TARGET USER
+    if (m.quoted) {
+      target = m.quoted.sender;
+    } else {
+      target = mentionByTag[0];
+    }
+
+    // SELF IMAGE (sender)
+    let senderImg;
+    try {
+      senderImg = await Gifted.profilePictureUrl(m.sender, "image");
+    } catch {
+      senderImg =
+        "https://i.pinimg.com/564x/84/09/12/840912dd744e6662ab211b8070b5d84c.jpg";
+    }
+
+    // TARGET IMAGE
+    let targetImg;
+    try {
+      targetImg = await Gifted.profilePictureUrl(target, "image");
+    } catch {
+      targetImg =
+        "https://i.pinimg.com/564x/84/09/12/840912dd744e6662ab211b8070b5d84c.jpg";
+    }
+
+    try {
+      await react("⏳");
+
+      const result = await canvacord.Canvacord.slap(
+        senderImg,
+        targetImg
+      );
+
+      await Gifted.sendMessage(
+        from,
+        {
+          image: result,
+          caption: `💥 *@${m.sender.split("@")[0]} slapped @${target.split("@")[0]}* 😆`,
+          mentions: [m.sender, target],
+        },
+        { quoted: m }
+      );
+
+      await react("😂");
+    } catch (err) {
+      await react("❌");
+      return reply("❌ Slap failed: " + err.message);
     }
   }
 );
