@@ -30,6 +30,7 @@
     "better-sqlite3": "^12.6.2",
     "body-parser": "latest",
     "buffer": "*",
+    "canvacord": "*",
     "dotenv": "*",
     "express": "^4.19.2",
     "ffmpeg-static": "*",
